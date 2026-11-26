@@ -1,0 +1,3 @@
+# System packages cover everything (gi/Atspi). No pip install required.
+# Optional, X11 sessions only (mss screenshots are blank on Wayland):
+#   pip install mss
