@@ -39,7 +39,7 @@ Authorization: Bearer <token>
 Content-Type: application/json
 Idempotency-Key: <uuid per event>
 
-{"message": "\U0001F514 A new dialog \"Are you still there?\" appeared on screen.",
+{"message": "🔔 A new dialog \"Are you still there?\" appeared on screen.\nSend it now via the message tool: action \"send\", channel \"zalo\", target \"<paired-owner-id>\", message \"<same alert line>\", media \"<absolute shot path, if captured>\".",
  "agentId": "main", "deliver": false}
 ```
 

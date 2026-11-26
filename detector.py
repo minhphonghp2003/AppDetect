@@ -41,6 +41,8 @@ OPENCLAW_URL = os.environ.get(
     "OPENCLAW_URL", "http://127.0.0.1:18789/hooks/agent"
 )
 AGENT_ID = os.environ.get("OPENCLAW_AGENT_ID", "main")
+ZALO_CHANNEL = os.environ.get("ZALO_CHANNEL", "zalo")
+ZALO_TARGET = os.environ.get("ZALO_TARGET", "8513a5da1d8ff4d1ad9e")
 POLL_INTERVAL = float(os.environ.get("DETECT_INTERVAL", "1.0"))
 PER_KEY_COOLDOWN = int(os.environ.get("DETECT_COOLDOWN", "300"))
 SHOTS_DIR = os.environ.get("DETECT_SHOTS_DIR", "./shots")
@@ -267,11 +269,20 @@ def _shot_portal(shots_dir, interactive=False, timeout_s=12):
 
 # ---------------------------------------------------------------- OpenClaw webhook
 
-def build_message(info):
+def build_message(info, shot_path):
     name = (info["name"] or "").strip()
     if name:
-        return f"\U0001F514 A new {info['role']} \"{name}\" appeared on screen."
-    return f"\U0001F514 A new {info['role']} appeared on screen."
+        text = f"\U0001F514 A new {info['role']} \u201c{name}\u201d appeared on screen."
+    else:
+        text = f"\U0001F514 A new {info['role']} appeared on screen."
+    send = (f'Send it now via the message tool: action "send", '
+            f'channel "{ZALO_CHANNEL}", target "{ZALO_TARGET}", '
+            f'message "{text}"')
+    if shot_path:
+        send += f', media "{shot_path}"'
+    else:
+        send += " (no screenshot was captured; text only)"
+    return f"{text}\n{send}."
 
 
 def send_openclaw(message, url, token, agent_id="main", deliver=False):
@@ -313,7 +324,7 @@ def main():
         return 2
 
     if args.grant_screenshot:
-        p = capture_screenshot(SHOTS_DIR, interactive=True)
+        p = capture_screenshot(os.path.abspath(SHOTS_DIR), interactive=True)
         print(f"screenshot: {p or 'FAILED - no permission granted'}")
         return 0 if p else 1
 
@@ -354,8 +365,8 @@ def main():
                 continue
             if now - last_sent_global < 5:  # burst guard
                 continue
-            shot = None if args.no_screenshot else capture_screenshot(SHOTS_DIR)
-            msg = build_message(info)
+            shot = None if args.no_screenshot else capture_screenshot(os.path.abspath(SHOTS_DIR))
+            msg = build_message(info, shot)
             last_sent_key[key] = now
             last_sent_global = now
             if live:
