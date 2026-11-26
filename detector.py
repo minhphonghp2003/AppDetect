@@ -8,7 +8,7 @@ How it works
 2. Alerts ONLY on NEW top-level windows/dialogs (role frame/dialog/alert/window),
    not on every focus change.
 3. Captures a screenshot (portal on Wayland after one-time grant, mss on X11).
-4. POSTs to OpenClaw hooks/agent so the agent can forward to owner Discord.
+4. POSTs to OpenClaw hooks/agent so the agent can forward to owner Zalo.
 
 Default mode is DRY-RUN (prints what would be sent). Use --live to really POST.
 
@@ -267,16 +267,11 @@ def _shot_portal(shots_dir, interactive=False, timeout_s=12):
 
 # ---------------------------------------------------------------- OpenClaw webhook
 
-def build_message(info, active_desc, shot_path):
-    target = info["name"] or f"(unnamed {info['role']})"
-    shot = shot_path if shot_path else "unavailable (Wayland portal not granted yet)"
-    return (
-        f"New {info['role']} detected on Linux demo: app='{info['app']}', "
-        f"window='{target}'. Active window: '{active_desc}'. "
-        f"Screenshot: {shot}. "
-        f"Please send a Discord message to the owner with this info"
-        + (" and attach the screenshot." if shot_path else ".")
-    )
+def build_message(info):
+    name = (info["name"] or "").strip()
+    if name:
+        return f"\U0001F514 A new {info['role']} \"{name}\" appeared on screen."
+    return f"\U0001F514 A new {info['role']} appeared on screen."
 
 
 def send_openclaw(message, url, token, agent_id="main", deliver=False):
@@ -359,9 +354,8 @@ def main():
                 continue
             if now - last_sent_global < 5:  # burst guard
                 continue
-            active_desc = active or "?"
             shot = None if args.no_screenshot else capture_screenshot(SHOTS_DIR)
-            msg = build_message(info, active_desc, shot)
+            msg = build_message(info)
             last_sent_key[key] = now
             last_sent_global = now
             if live:
@@ -371,7 +365,7 @@ def main():
                 except Exception as e:
                     print(f"ALERT FAILED :: {key} :: {e}", flush=True)
             else:
-                print(f"[DRY-RUN] would send :: {key}\n  msg={msg}", flush=True)
+                print(f"[DRY-RUN] would send :: {key} (active={active} shot={shot})\n  msg={msg}", flush=True)
         # forget closed windows so reopening re-alerts after cooldown
         for key in [k for k in known if k not in wins]:
             del known[key]

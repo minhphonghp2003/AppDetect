@@ -1,8 +1,8 @@
-# Linux new-window detector → OpenClaw → owner Discord (demo)
+# Linux new-window detector → OpenClaw → owner Zalo (demo)
 
 Detects **new dialogs/windows** via AT-SPI (works on X11 **and** Wayland,
 no GNOME Shell Eval needed), captures a screenshot, POSTs to OpenClaw
-`hooks/agent` so the agent forwards it to the owner's Discord.
+`hooks/agent` so the agent forwards it to the owner's Zalo.
 
 ## Run
 
@@ -39,7 +39,7 @@ Authorization: Bearer <token>
 Content-Type: application/json
 Idempotency-Key: <uuid per event>
 
-{"message": "New dialog detected ... Please send a Discord message to the owner ...",
+{"message": "\U0001F514 A new dialog \"Are you still there?\" appeared on screen.",
  "agentId": "main", "deliver": false}
 ```
 
